@@ -87,8 +87,7 @@ public class ClientController implements Observer {
             if (activeClient == null) {
                 throw new SystemException("Debe identificarse antes de cancelar pedidos.");
             }
-            List<Order> selected = view.getSelectedOrders(); // <-- ahora lo agregamos en la view
-
+            List<Order> selected = view.getSelectedOrders();
             Service s = activeClient.getService();
             s.cancelOrders(selected);
             if (selected.size() == 1) {
