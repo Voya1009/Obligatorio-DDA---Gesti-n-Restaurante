@@ -89,27 +89,38 @@ public class Service {
         }
     }
 
-    public String tryFinalize(PaymentPolicy policy) throws SystemException {
+    public void cancelOrders(List<Order> selected) throws SystemException {
+        if (selected == null || selected.isEmpty()) {
+            throw new SystemException("Debe seleccionar al menos un pedido para cancelar.");
+        }
+        List<Order> nonCancelable = new ArrayList<>();
+        List<Order> cancelable = new ArrayList<>();
+        for (Order o : selected) {
+            if (o.isCancelable()) { cancelable.add(o); } 
+            else { nonCancelable.add(o); }
+        }
+        orders.removeAll(cancelable);
+        if (!nonCancelable.isEmpty()) {
+            throw new SystemException("Algunos pedidos no se pudieron cancelar:");
+        }
+    }
+
+    public double[] tryFinalize(PaymentPolicy policy) throws SystemException {
         if (orders.isEmpty()) {
             endService();
             return null;
         }
-        boolean hasInProgress = orders.stream().anyMatch(o -> o.getState() == OrderState.IN_PROGRESS);
-        if (hasInProgress) { throw new SystemException("No puede finalizar el servicio: hay pedidos en preparación."); }
-        boolean hasReadyOrDelivered = orders.stream().anyMatch(o -> o.getState() == OrderState.READY || o.getState() == OrderState.DELIVERED);
+        boolean hasInProgress = orders.stream().anyMatch(Order::isInProgress);
+        if (hasInProgress) {
+            throw new SystemException("No puede finalizar el servicio: hay pedidos en preparación.");
+        }
+        boolean hasReadyOrDelivered = orders.stream().anyMatch(Order::isReadyOrDelivered);
         endService();
         if (hasReadyOrDelivered) {
             double rawTotal = calculateRawTotal();
             double finalTotal = calculateFinalTotal(policy);
             double benefit = rawTotal - finalTotal;
-
-            return String.format(
-                    "<html><div style='text-align:center;'>"
-                    + "Beneficio aplicado: $%.2f<br>"
-                    + "Total a pagar: $%.2f"
-                    + "</div></html>",
-                    benefit, finalTotal
-            );
+            return new double[]{finalTotal, benefit};
         }
         return null;
     }

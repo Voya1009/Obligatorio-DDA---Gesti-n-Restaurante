@@ -24,7 +24,6 @@ public class ManagerLoginView extends JFrame {
 
         buildUI();
         bindEvents();
-
         setVisible(true);
     }
 
@@ -38,7 +37,7 @@ public class ManagerLoginView extends JFrame {
         inputPanel.add(passwordField);
 
         add(inputPanel, BorderLayout.CENTER);
-
+        
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(loginButton);
         add(buttonPanel, BorderLayout.SOUTH);

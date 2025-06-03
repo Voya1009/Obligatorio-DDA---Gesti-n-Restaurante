@@ -17,18 +17,19 @@ public class ClientView extends JFrame {
 
     private final JTextField usernameField = new JTextField();
     private final JPasswordField passwordField = new JPasswordField();
-    private final JButton loginButton = new JButton("Iniciar sesión");
+    private final JButton btnLogin = new JButton("Iniciar sesión");
 
     private final JLabel clientNameLabel = new JLabel("Cliente: no logueado");
     private final JLabel totalLabel = new JLabel("Total: $0");
 
     private final JList<Item> itemList = new JList<>(itemModel);
     private final JTextField commentField = new JTextField();
-    private final JButton addButton = new JButton("Agregar pedido");
+    private final JButton btnAddOrder = new JButton("Agregar pedido");
 
     private final JList<Order> orderList = new JList<>(orderModel);
-    private final JButton confirmButton = new JButton("Confirmar pedidos");
-    private final JButton finalizeButton = new JButton("Finalizar servicio");
+    private final JButton btnConfirm = new JButton("Confirmar pedidos");
+    private final JButton btnCancel = new JButton("Cancelar pedido(s)");
+    private final JButton btnFinalize = new JButton("Finalizar servicio");
 
     public ClientView(ClientController controller) {
         this.controller = controller;
@@ -61,7 +62,7 @@ public class ClientView extends JFrame {
         fields.add(new JLabel("Contraseña:"));
         fields.add(passwordField);
         loginPanel.add(fields);
-        loginPanel.add(loginButton);
+        loginPanel.add(btnLogin);
 
         JPanel infoPanel = new JPanel(new BorderLayout());
         infoPanel.setBorder(BorderFactory.createTitledBorder("Información del Servicio"));
@@ -73,12 +74,12 @@ public class ClientView extends JFrame {
 
         getContentPane().add(topPanel, BorderLayout.NORTH);
 
-        loginButton.addActionListener(e -> controller.handleLogin());
+        btnLogin.addActionListener(e -> controller.handleLogin());
     }
 
     private void buildCenterPanel() {
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setResizeWeight(0.5); // mitad para ítems, mitad para pedidos
+        splitPane.setResizeWeight(0.5);
         splitPane.setDividerLocation(300);
         splitPane.setOneTouchExpandable(true);
 
@@ -94,7 +95,7 @@ public class ClientView extends JFrame {
         JPanel commentPanel = new JPanel(new BorderLayout(5, 5));
         commentPanel.add(new JLabel("Comentario:"), BorderLayout.WEST);
         commentPanel.add(commentField, BorderLayout.CENTER);
-        commentPanel.add(addButton, BorderLayout.EAST);
+        commentPanel.add(btnAddOrder, BorderLayout.EAST);
         itemPanel.add(commentPanel, BorderLayout.SOUTH);
 
         JPanel orderPanel = new JPanel(new BorderLayout(5, 5));
@@ -111,19 +112,19 @@ public class ClientView extends JFrame {
 
         getContentPane().add(splitPane, BorderLayout.CENTER);
 
-        addButton.addActionListener(e -> controller.handleAddOrder());
+        btnAddOrder.addActionListener(e -> controller.handleAddOrder());
     }
 
     private void buildBottomPanel() {
         JPanel bottomPanel = new JPanel(new GridLayout(1, 2, 10, 5));
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
-        bottomPanel.add(confirmButton);
-        bottomPanel.add(finalizeButton);
-
+        bottomPanel.add(btnConfirm);
+        bottomPanel.add(btnCancel);
+        bottomPanel.add(btnFinalize);
         getContentPane().add(bottomPanel, BorderLayout.SOUTH);
-
-        confirmButton.addActionListener(e -> controller.handleConfirmOrders());
-        finalizeButton.addActionListener(e -> controller.handleFinalizeService());
+        btnConfirm.addActionListener(e -> controller.handleConfirmOrders());
+        btnCancel.addActionListener(e -> controller.handleCancelOrders());
+        btnFinalize.addActionListener(e -> controller.handleFinalizeService());
     }
 
     public String getUsernameField() {
@@ -136,6 +137,10 @@ public class ClientView extends JFrame {
 
     public Item getSelectedItem() {
         return itemList.getSelectedValue();
+    }
+
+    public List<Item> getSelectedItems() {
+        return itemList.getSelectedValuesList();
     }
 
     public List<Order> getSelectedOrders() {
@@ -188,5 +193,20 @@ public class ClientView extends JFrame {
 
     public void showMessage(String msg) {
         JOptionPane.showMessageDialog(this, msg, "Atención", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public void showPaymentDetails(double total, double benefit) {
+        String textoPago = String.format(
+                "<html><div style='text-align:center;'>"
+                + "Beneficio aplicado: $%.2f<br>"
+                + "Total a pagar: $%.2f"
+                + "</div></html>", benefit, total);
+
+        JOptionPane.showMessageDialog(
+                this,
+                textoPago,
+                "Detalle de pago",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 }

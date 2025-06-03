@@ -38,7 +38,7 @@ public class ClientController implements Observer {
                 activeClient = c;
                 activeDevice.assignClient(activeClient);
                 activeClient.newService();
-            }            
+            }
             view.setClientName(activeClient.getName());
             view.showMessage("Inicio de sesión exitoso.");
         } catch (SystemException e) {
@@ -51,9 +51,15 @@ public class ClientController implements Observer {
             if (activeClient == null) {
                 throw new SystemException("Debe identificarse antes de realizar pedidos.");
             }
-            Item item = view.getSelectedItem();
+            List<Item> selectedItems = view.getSelectedItems();
+            if (selectedItems.isEmpty()) {
+                throw new SystemException("Debe seleccionar al menos un ítem.");
+            }
             String comment = view.getCommentField();
-            activeClient.getService().addOrder(item, comment);
+            for (Item item : selectedItems) {
+                Order order = new Order(item, comment);
+                activeClient.getService().addOrder(item, comment);
+            }
             view.clearOrderInputs();
             update();
         } catch (SystemException e) {
@@ -76,21 +82,36 @@ public class ClientController implements Observer {
         }
     }
 
+    public void handleCancelOrders() {
+        try {
+            if (activeClient == null) {
+                throw new SystemException("Debe identificarse antes de cancelar pedidos.");
+            }
+            List<Order> selected = view.getSelectedOrders(); // <-- ahora lo agregamos en la view
+
+            Service s = activeClient.getService();
+            s.cancelOrders(selected);
+            if (selected.size() == 1) {
+                view.showMessage("Pedido cancelado.");
+            } else {
+                view.showMessage("Pedidos cancelados.");
+            }
+            update();
+        } catch (SystemException e) {
+            view.showMessage(e.getMessage());
+        }
+    }
+
     public void handleFinalizeService() {
         try {
             if (activeClient == null) {
                 throw new SystemException("Debe identificarse antes de finalizar un servicio.");
             }
-            Service service = activeClient.getService();
-            String paymentDetail = service.tryFinalize(activeClient.getPaymentPolicy());
-
-            if (paymentDetail != null) {
-                JOptionPane.showMessageDialog(
-                        view,
-                        paymentDetail,
-                        "Detalle de pago",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+            double[] totals = activeClient.getService().tryFinalize(activeClient.getPaymentPolicy());
+            if (totals != null) {
+                double total = totals[0];
+                double benefit = totals[1];
+                view.showPaymentDetails(total, benefit);
             }
             view.showMessage("Servicio finalizado.");
             finalizeAndCleanup();

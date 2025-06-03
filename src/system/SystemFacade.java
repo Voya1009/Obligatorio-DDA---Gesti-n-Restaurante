@@ -3,7 +3,6 @@ package system;
 import model.*;
 import observer.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SystemFacade {

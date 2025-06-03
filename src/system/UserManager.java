@@ -51,39 +51,33 @@ public class UserManager {
     public List<Order> getOrdersByManager(Manager manager, OrderState... states) {
         List<Order> result = new ArrayList<>();
         List<OrderState> validStates = List.of(states);
-
         for (Client client : clients) {
             Service service = client.getService();
             if (service == null) {
                 continue;
             }
-
             for (Order order : service.getOrders()) {
                 if (manager.equals(order.getManager()) && validStates.contains(order.getState())) {
                     result.add(order);
                 }
             }
         }
-
         return result;
     }
 
     public List<Order> getOrdersByUnitAndState(ProcessingUnit unit, OrderState state) {
         List<Order> result = new ArrayList<>();
-
         for (Client client : clients) {
             Service service = client.getService();
             if (service == null) {
                 continue;
             }
-
             for (Order order : service.getOrders()) {
                 if (unit.equals(order.getItem().getPU()) && order.getState() == state) {
                     result.add(order);
                 }
             }
         }
-
         return result;
     }
 }

@@ -60,6 +60,19 @@ public class Order {
         return confirmedAt;
     }
 
+    public boolean isInProgress() {
+        return state == OrderState.IN_PROGRESS;
+    }
+
+    public boolean isReadyOrDelivered() {
+        return state == OrderState.READY || state == OrderState.DELIVERED;
+    }
+
+    public boolean isCancelable() {
+        if (state == OrderState.NOT_CONFIRMED || state == OrderState.CONFIRMED) return true;
+        else return false;
+    }
+
     @Override
     public String toString() {
         String result = item.getName() + " - $" + item.getPrice();
