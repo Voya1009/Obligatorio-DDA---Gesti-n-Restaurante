@@ -6,7 +6,11 @@ import model.*;
 
 public class ProcessingUnitManager {
 
-    private List<ProcessingUnit> units = new ArrayList<>();
+    private List<ProcessingUnit> units;
+
+    public ProcessingUnitManager() {
+        this.units = new ArrayList<>();
+    }
 
     public void addUnit(ProcessingUnit unit) {
         units.add(unit);

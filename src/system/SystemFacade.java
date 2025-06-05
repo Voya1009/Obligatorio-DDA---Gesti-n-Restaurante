@@ -8,11 +8,12 @@ import java.util.List;
 public class SystemFacade {
 
     private static SystemFacade instance;
+    private final ObserverManager observerManager;
     private final UserManager userManager;
     private final DeviceManager deviceManager;
     private final MenuManager menuManager;
+    private final SupplyManager supplyManager;
     private final ProcessingUnitManager unitManager;
-    private final ObserverManager observerManager;
 
     private SystemFacade() {
         this.userManager = new UserManager();
@@ -20,6 +21,7 @@ public class SystemFacade {
         this.menuManager = new MenuManager();
         this.unitManager = new ProcessingUnitManager();
         this.observerManager = new ObserverManager();
+        this.supplyManager = new SupplyManager(menuManager, userManager, observerManager);
     }
 
     public static SystemFacade getInstance() {
@@ -70,20 +72,20 @@ public class SystemFacade {
         return menuManager.getCategories();
     }
 
-    public void addCategory(Category c) {
+    public void addCategoryToMenu(Category c) {
         menuManager.addCategory(c);
     }
 
-    public void addItem(Item item) {
+    public void addItemToMenu(Item item) {
         menuManager.addItem(item);
     }
 
     public void addSupply(Supply s) {
-        menuManager.addSupply(s);
+        supplyManager.addSupply(s);
     }
 
     public List<Supply> getSupplies() {
-        return menuManager.getSupplies();
+        return supplyManager.getSupplies();
     }
 
     public void addProcessingUnit(ProcessingUnit unit) {
@@ -125,6 +127,14 @@ public class SystemFacade {
 
     public MenuManager getMenuManager() {
         return menuManager;
+    }
+
+    public SupplyManager getSupplyManager() {
+        return supplyManager;
+    }
+
+    public ObserverManager getObserverManager() {
+        return observerManager;
     }
 
     public ProcessingUnitManager getProcessingUnitManager() {

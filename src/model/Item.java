@@ -7,14 +7,14 @@ public class Item {
     private String name;
     private double price;
     private Category category;
-    private ProcessingUnit assignedPU;
+    private ProcessingUnit pUnit;
     private ArrayList<Ingredient> ingredients;
 
-    public Item(String name, int price, Category cat, ProcessingUnit assignedPU) {
+    public Item(String name, int price, Category cat, ProcessingUnit pUnit) {
         this.name = name;
         this.price = price;
         this.category = cat;
-        this.assignedPU = assignedPU;
+        this.pUnit = pUnit;
         this.ingredients = new ArrayList<>();
     }
 
@@ -44,19 +44,30 @@ public class Item {
 
     public void setCategory(Category category) {
         this.category = category;
-        if (!category.getItems().contains(this)) category.addItem(this);
+        if (!category.getItems().contains(this)) {
+            category.addItem(this);
+        }
     }
 
     public ProcessingUnit getPU() {
-        return assignedPU;
+        return pUnit;
     }
 
     public void setAssignedUP(ProcessingUnit assignedPU) {
-        this.assignedPU = assignedPU;
+        this.pUnit = assignedPU;
     }
 
     public ArrayList<Ingredient> getIngredients() {
         return ingredients;
+    }
+
+    public boolean usesSupply(Supply s) {
+        for (Ingredient ing : ingredients) {
+            if (ing.getSupply().equals(s)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

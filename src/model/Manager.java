@@ -5,13 +5,13 @@ public class Manager {
     private String username;
     private String password;
     private String name;
-    private ProcessingUnit assignedPU;
+    private ProcessingUnit pUnit;
 
-    public Manager(String username, String password, String name, ProcessingUnit assignedPU) {
+    public Manager(String username, String password, String name, ProcessingUnit pUnit) {
         this.username = username;
         this.password = password;
         this.name = name;
-        this.assignedPU = assignedPU;
+        this.pUnit = pUnit;
     }
 
     public String getUsername() {
@@ -27,6 +27,6 @@ public class Manager {
     }
 
     public ProcessingUnit getPU() {
-        return assignedPU;
+        return pUnit;
     }
 }

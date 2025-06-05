@@ -69,8 +69,11 @@ public class Order {
     }
 
     public boolean isCancelable() {
-        if (state == OrderState.NOT_CONFIRMED || state == OrderState.CONFIRMED) return true;
-        else return false;
+        if (state == OrderState.NOT_CONFIRMED || state == OrderState.CONFIRMED) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -106,7 +109,7 @@ public class Order {
     }
 
     public void advanceState(Manager manager) throws SystemException {
-        validate(this);
+        this.validate();
         switch (state) {
             case CONFIRMED:
                 setManager(manager);
@@ -123,9 +126,19 @@ public class Order {
         }
     }
 
-    public static void validate(Order order) throws SystemException {
-        if (order == null) {
+    public void validate() throws SystemException {
+        if (this == null) {
             throw new SystemException("Debe seleccionar un pedido.");
+        }
+    }
+
+    public void validateStock(SupplyManager supplyManager) throws SystemException {
+        for (Ingredient ing : this.getItem().getIngredients()) {
+            Supply s = ing.getSupply();
+            s.decreaseStock(ing.getQuantity());
+            if (s.getStock() <= s.getMinStock()) {
+                supplyManager.handleOutOfStock(s);                
+            }
         }
     }
 }

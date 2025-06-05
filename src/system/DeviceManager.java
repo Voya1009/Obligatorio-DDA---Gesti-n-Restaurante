@@ -6,7 +6,11 @@ import model.Device;
 
 public class DeviceManager {
 
-    private List<Device> devices = new ArrayList<>();
+    private List<Device> devices;
+
+    public DeviceManager() {
+        this.devices = new ArrayList<>();
+    }
 
     public void addDevice(Device device) {
         devices.add(device);

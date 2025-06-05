@@ -42,11 +42,8 @@ public class Supply {
     }
 
     public void decreaseStock(int count) throws SystemException {
-        if (count <= 0) {
-            throw new SystemException("No se puede disminuir una cantidad menor a 1.");
-        }
         if (stock < count || stock <= minStock) {
-            throw new SystemException("Stock insuficiente de " + name + ".");
+            throw new SystemException("Stock insuficiente.");
         }
         this.stock -= count;
     }

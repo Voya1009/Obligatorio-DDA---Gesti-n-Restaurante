@@ -1,47 +1,50 @@
 package system;
 
+import model.*;
+
 import java.util.ArrayList;
 import java.util.List;
-import model.*;
+import java.util.stream.Collectors;
 
 public class MenuManager {
 
-    private List<Item> items = new ArrayList<>();
-    private List<Category> categories = new ArrayList<>();
-    private List<Supply> supplies = new ArrayList<>();
+    private Menu menu;
 
-    public void addItem(Item item) {
-        items.add(item);
+    public MenuManager() {
+        this.menu = new Menu("Principal");
+    }
+
+    public Menu getMenu() {
+        return menu;
+    }
+
+    public void setMenu(Menu menu) {
+        this.menu = menu;
     }
 
     public List<Item> getItems() {
-        return items;
+        return menu.getItems();
     }
 
-    public List<Item> getItemsByCategory(Category category) {
-        List<Item> result = new ArrayList<>();
-        for (Item item : items) {
-            if (item.getCategory().equals(category)) {
-                result.add(item);
-            }
-        }
-        return result;
+    public void addItem(Item i) {
+        menu.addItem(i);
     }
 
-    public void addCategory(Category category) {
-        categories.add(category);
+    public void addCategory(Category c) {
+        menu.addCategory(c);
     }
 
     public List<Category> getCategories() {
-        return categories;
+        return menu.getCategories();
     }
 
-    // ───── SUPPLIES ─────
-    public void addSupply(Supply supply) {
-        supplies.add(supply);
+    public List<Item> getItemsByCategory(Category category) {
+        return menu.getItems().stream()
+                .filter(item -> item.getCategory().equals(category))
+                .collect(Collectors.toList());
     }
 
-    public List<Supply> getSupplies() {
-        return supplies;
+    public void removeItem(Item item) {
+        menu.removeItem(item);
     }
 }

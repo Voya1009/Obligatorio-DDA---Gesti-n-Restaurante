@@ -8,6 +8,7 @@ public class Service {
 
     private ArrayList<Order> orders;
     private boolean isFinalized;
+    private List<Item> removedItemsByStock = new ArrayList<>();
 
     public Service() {
         this.orders = new ArrayList<>();
@@ -25,9 +26,9 @@ public class Service {
     }
 
     public void removeOrder(Order o) throws SystemException {
-        if (o.getState() != OrderState.NOT_CONFIRMED) {
-            throw new SystemException("Solo puede eliminar pedidos no confirmados.");
-        }
+        if (o.getState() == OrderState.IN_PROGRESS) throw new SystemException("Pedido en proceso.");
+        if (o.getState() == OrderState.READY) throw new SystemException("El pedido esta listo.");
+        if (o.getState() == OrderState.DELIVERED) throw new SystemException("El pedido ya fue entregado.");
         orders.remove(o);
     }
 
@@ -68,22 +69,13 @@ public class Service {
         if (toConfirm.isEmpty()) {
             throw new SystemException("Debe seleccionar pedidos sin confirmar.");
         }
-        List<Order> toRemove = new ArrayList<>();
         boolean anyConfirmed = false;
         for (Order o : toConfirm) {
-            try {
-                for (Ingredient ing : o.getItem().getIngredients()) {
-                    Supply s = ing.getSupply();
-                    s.decreaseStock(ing.getQuantity());
-                }
-                o.changeState(OrderState.CONFIRMED);
-                system.submitOrderToUnit(o);
-                anyConfirmed = true;
-            } catch (SystemException e) {
-                toRemove.add(o);
-            }
+            o.validateStock(system.getSupplyManager());
+            o.changeState(OrderState.CONFIRMED);
+            system.submitOrderToUnit(o);
+            anyConfirmed = true;
         }
-        orders.removeAll(toRemove);
         if (!anyConfirmed) {
             throw new SystemException("No se pudo confirmar ningún pedido.");
         }
@@ -96,13 +88,33 @@ public class Service {
         List<Order> nonCancelable = new ArrayList<>();
         List<Order> cancelable = new ArrayList<>();
         for (Order o : selected) {
-            if (o.isCancelable()) { cancelable.add(o); } 
-            else { nonCancelable.add(o); }
+            if (o.isCancelable()) {
+                cancelable.add(o);
+            } else {
+                nonCancelable.add(o);
+            }
         }
         orders.removeAll(cancelable);
         if (!nonCancelable.isEmpty()) {
             throw new SystemException("Algunos pedidos no se pudieron cancelar:");
         }
+    }
+
+    public void removeUnconfirmedOrdersByItem(Item item) {
+        boolean removed = orders.removeIf(o -> o.getState() == OrderState.NOT_CONFIRMED && o.getItem().equals(item));
+        if (removed) {
+            removedItemsByStock.add(item);
+        }
+    }
+
+    public boolean hasRemovedItemsByStock() {
+        return !removedItemsByStock.isEmpty();
+    }
+
+    public List<Item> getRemovedItemsByStock() {
+        List<Item> removed = new ArrayList<>(removedItemsByStock);
+        removedItemsByStock.clear();
+        return removed;
     }
 
     public double[] tryFinalize(PaymentPolicy policy) throws SystemException {
