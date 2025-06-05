@@ -1,8 +1,7 @@
 package view;
 
 import controller.ClientController;
-import model.Item;
-import model.Order;
+import model.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +11,7 @@ public class ClientView extends JFrame {
 
     private final ClientController controller;
 
+    private final DefaultListModel<Category> categoryModel = new DefaultListModel<>();
     private final DefaultListModel<Item> itemModel = new DefaultListModel<>();
     private final DefaultListModel<Order> orderModel = new DefaultListModel<>();
 
@@ -19,23 +19,23 @@ public class ClientView extends JFrame {
     private final JPasswordField passwordField = new JPasswordField();
     private final JButton btnLogin = new JButton("Iniciar sesión");
 
-    private final JLabel clientNameLabel = new JLabel("Cliente: no logueado");
-    private final JLabel totalLabel = new JLabel("Total: $0");
+    private final JLabel totalLabel = new JLabel("Total: $0  ");
 
+    private final JList<Category> categoryList = new JList<>(categoryModel);
     private final JList<Item> itemList = new JList<>(itemModel);
     private final JTextField commentField = new JTextField();
     private final JButton btnAddOrder = new JButton("Agregar pedido");
 
     private final JList<Order> orderList = new JList<>(orderModel);
-    private final JButton btnConfirm = new JButton("Confirmar pedidos");
+    private final JButton btnConfirm = new JButton("Confirmar pedido(s)");
     private final JButton btnCancel = new JButton("Cancelar pedido(s)");
     private final JButton btnFinalize = new JButton("Finalizar servicio");
 
     public ClientView(ClientController controller) {
         this.controller = controller;
 
-        setTitle("Vista Cliente");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setTitle("Servicio RestApp");
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setPreferredSize(new Dimension(600, 650));
         setLocationRelativeTo(null);
 
@@ -53,20 +53,37 @@ public class ClientView extends JFrame {
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
 
-        JPanel loginPanel = new JPanel(new GridLayout(1, 3, 5, 5));
+        JPanel loginPanel = new JPanel(new GridBagLayout());
         loginPanel.setBorder(BorderFactory.createTitledBorder("Login"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 20, 10, 10);
+        gbc.anchor = GridBagConstraints.WEST;
 
-        JPanel fields = new JPanel(new GridLayout(2, 2, 5, 5));
-        fields.add(new JLabel("Número:"));
-        fields.add(usernameField);
-        fields.add(new JLabel("Contraseña:"));
-        fields.add(passwordField);
-        loginPanel.add(fields);
-        loginPanel.add(btnLogin);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        loginPanel.add(new JLabel("  Número:"), gbc);
+
+        gbc.gridx = 1;
+        usernameField.setPreferredSize(new Dimension(130, 25));
+        loginPanel.add(usernameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        loginPanel.add(new JLabel("  Contraseña:"), gbc);
+
+        gbc.gridx = 1;
+        passwordField.setPreferredSize(new Dimension(130, 25));
+        loginPanel.add(passwordField, gbc);
+
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.gridheight = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        btnLogin.setPreferredSize(new Dimension(130, 35));
+        loginPanel.add(btnLogin, gbc);
 
         JPanel infoPanel = new JPanel(new BorderLayout());
-        infoPanel.setBorder(BorderFactory.createTitledBorder("Información del Servicio"));
-        infoPanel.add(clientNameLabel, BorderLayout.WEST);
+        infoPanel.setBorder(BorderFactory.createTitledBorder("Costo del servicio"));
         infoPanel.add(totalLabel, BorderLayout.EAST);
 
         topPanel.add(loginPanel);
@@ -83,31 +100,40 @@ public class ClientView extends JFrame {
         splitPane.setDividerLocation(300);
         splitPane.setOneTouchExpandable(true);
 
-        JPanel itemPanel = new JPanel(new BorderLayout(5, 5));
-        itemPanel.setBorder(BorderFactory.createTitledBorder("Ítems disponibles"));
+        JPanel leftPanel = new JPanel(new BorderLayout(5, 5));
 
-        itemPanel.add(new JLabel("Seleccione un ítem y agregue comentario:"), BorderLayout.NORTH);
+        categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JScrollPane scrollCategories = new JScrollPane(categoryList);
+        scrollCategories.setBorder(BorderFactory.createTitledBorder("Categorías"));
+        categoryList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                Category selected = categoryList.getSelectedValue();
+                if (selected != null) {
+                    updateItemList(selected.getItems());
+                }
+            }
+        });
+        leftPanel.add(scrollCategories, BorderLayout.NORTH);
 
         itemList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        JScrollPane scrollItem = new JScrollPane(itemList);
-        itemPanel.add(scrollItem, BorderLayout.CENTER);
+        JScrollPane scrollItems = new JScrollPane(itemList);
+        scrollItems.setBorder(BorderFactory.createTitledBorder("Ítems"));
+        leftPanel.add(scrollItems, BorderLayout.CENTER);
 
-        JPanel commentPanel = new JPanel(new BorderLayout(5, 5));
-        commentPanel.add(new JLabel("Comentario:"), BorderLayout.WEST);
+        JPanel commentPanel = new JPanel(new BorderLayout(10, 10));
+        commentPanel.add(new JLabel("  Comentario:"), BorderLayout.WEST);
         commentPanel.add(commentField, BorderLayout.CENTER);
         commentPanel.add(btnAddOrder, BorderLayout.EAST);
-        itemPanel.add(commentPanel, BorderLayout.SOUTH);
+        leftPanel.add(commentPanel, BorderLayout.SOUTH);
 
         JPanel orderPanel = new JPanel(new BorderLayout(5, 5));
         orderPanel.setBorder(BorderFactory.createTitledBorder("Pedidos"));
 
-        orderPanel.add(new JLabel("Pedidos actuales en servicio:"), BorderLayout.NORTH);
-
         orderList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        JScrollPane scrollOrder = new JScrollPane(orderList);
-        orderPanel.add(scrollOrder, BorderLayout.CENTER);
+        JScrollPane scrollOrders = new JScrollPane(orderList);
+        orderPanel.add(scrollOrders, BorderLayout.CENTER);
 
-        splitPane.setLeftComponent(itemPanel);
+        splitPane.setLeftComponent(leftPanel);
         splitPane.setRightComponent(orderPanel);
 
         getContentPane().add(splitPane, BorderLayout.CENTER);
@@ -116,8 +142,14 @@ public class ClientView extends JFrame {
     }
 
     private void buildBottomPanel() {
-        JPanel bottomPanel = new JPanel(new GridLayout(1, 2, 10, 5));
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
+
+        Dimension btnSize = new Dimension(160, 40);
+        btnConfirm.setPreferredSize(btnSize);
+        btnCancel.setPreferredSize(btnSize);
+        btnFinalize.setPreferredSize(btnSize);
+
         bottomPanel.add(btnConfirm);
         bottomPanel.add(btnCancel);
         bottomPanel.add(btnFinalize);
@@ -151,8 +183,16 @@ public class ClientView extends JFrame {
         return commentField.getText().trim();
     }
 
-    public void setClientName(String name) {
-        clientNameLabel.setText("Cliente: " + name);
+    public void setCategories(List<Category> categories) {
+        categoryModel.clear();
+        for (Category c : categories) {
+            categoryModel.addElement(c);
+        }
+        itemModel.clear();
+    }
+
+    public void updateTitle(String clientName) {
+        setTitle("Servicio RestApp - Cliente: " + clientName);
     }
 
     public void updateItemList(List<Item> items) {
@@ -170,7 +210,7 @@ public class ClientView extends JFrame {
     }
 
     public void updateServiceTotal(double total) {
-        totalLabel.setText("Total: $" + total);
+        totalLabel.setText("Total: $" + Math.round(total));
     }
 
     public void clearOrderList() {
@@ -183,9 +223,9 @@ public class ClientView extends JFrame {
     }
 
     public void clearServiceData() {
+        setTitle("Servicio RestApp");
         clearOrderList();
         updateServiceTotal(0);
-        clientNameLabel.setText("Cliente: no logueado");
         usernameField.setText("");
         passwordField.setText("");
         commentField.setText("");

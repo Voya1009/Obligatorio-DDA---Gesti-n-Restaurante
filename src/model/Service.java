@@ -26,9 +26,15 @@ public class Service {
     }
 
     public void removeOrder(Order o) throws SystemException {
-        if (o.getState() == OrderState.IN_PROGRESS) throw new SystemException("Pedido en proceso.");
-        if (o.getState() == OrderState.READY) throw new SystemException("El pedido esta listo.");
-        if (o.getState() == OrderState.DELIVERED) throw new SystemException("El pedido ya fue entregado.");
+        if (o.getState() == OrderState.IN_PROGRESS) {
+            throw new SystemException("Pedido en proceso.");
+        }
+        if (o.getState() == OrderState.READY) {
+            throw new SystemException("El pedido esta listo.");
+        }
+        if (o.getState() == OrderState.DELIVERED) {
+            throw new SystemException("El pedido ya fue entregado.");
+        }
         orders.remove(o);
     }
 
@@ -105,7 +111,7 @@ public class Service {
         if (removed) {
             removedItemsByStock.add(item);
         }
-    }
+    }    
 
     public boolean hasRemovedItemsByStock() {
         return !removedItemsByStock.isEmpty();

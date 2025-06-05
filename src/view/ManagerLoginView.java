@@ -17,7 +17,7 @@ public class ManagerLoginView extends JFrame {
         this.controller = controller;
 
         setTitle("Login Gestor");
-        setSize(350, 180);
+        setSize(400, 200);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -28,26 +28,40 @@ public class ManagerLoginView extends JFrame {
     }
 
     private void buildUI() {
-        JPanel inputPanel = new JPanel(new GridLayout(2, 2, 10, 10));
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.CENTER;
 
-        inputPanel.add(new JLabel("Usuario:"));
-        inputPanel.add(usernameField);
-        inputPanel.add(new JLabel("Contraseña:"));
-        inputPanel.add(passwordField);
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        add(inputPanel, BorderLayout.CENTER);
-        
+        JPanel fieldsPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        fieldsPanel.setMaximumSize(new Dimension(300, 60));
+
+        fieldsPanel.add(new JLabel("Usuario:"));
+        fieldsPanel.add(usernameField);
+        fieldsPanel.add(new JLabel("Contraseña:"));
+        fieldsPanel.add(passwordField);
+
+        usernameField.setPreferredSize(new Dimension(140, 30));
+        passwordField.setPreferredSize(new Dimension(140, 30));
+
         JPanel buttonPanel = new JPanel();
+        loginButton.setPreferredSize(new Dimension(140, 35));
         buttonPanel.add(loginButton);
-        add(buttonPanel, BorderLayout.SOUTH);
+
+        mainPanel.add(fieldsPanel);
+        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(buttonPanel);
+
+        centerPanel.add(mainPanel, gbc);
+        add(centerPanel, BorderLayout.CENTER);
     }
 
     private void bindEvents() {
         loginButton.addActionListener(e -> controller.handleLogin());
     }
-
-    // Getters para el controller
 
     public String getUsernameField() {
         return usernameField.getText();
@@ -65,4 +79,3 @@ public class ManagerLoginView extends JFrame {
         dispose();
     }
 }
-

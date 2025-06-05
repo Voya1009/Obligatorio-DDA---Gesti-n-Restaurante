@@ -6,6 +6,8 @@ import model.Order;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class ManagerView extends JFrame {
 
@@ -23,10 +25,22 @@ public class ManagerView extends JFrame {
 
     public ManagerView(ManagerController controller) {
         this.controller = controller;
-        setTitle("Vista Gestor");
+        setTitle("Gestor - " + controller.getManagerName());
         setSize(700, 500);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (controller.hasUndeliveredOrders()) {
+                    showMessage("Aún quedan pedidos sin entregar.");
+                } else {
+                    dispose();
+                }
+            }
+        });
+
         setLayout(new BorderLayout());
         buildUI();
         bindEvents();
@@ -34,44 +48,53 @@ public class ManagerView extends JFrame {
     }
 
     private void buildUI() {
-        JPanel mainPanel = new JPanel(new GridLayout(1, 2));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
         JPanel leftPanel = new JPanel(new BorderLayout());
-        leftPanel.add(new JLabel("Pedidos disponibles (por confirmar):"), BorderLayout.NORTH);
+        leftPanel.add(new JLabel("Pedidos confirmados pendientes:"), BorderLayout.NORTH);
         pendingList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         leftPanel.add(new JScrollPane(pendingList), BorderLayout.CENTER);
-        leftPanel.add(btnTake, BorderLayout.SOUTH);
+
+        JPanel leftButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        btnTake.setPreferredSize(new Dimension(140, 30));
+        leftButtonPanel.add(btnTake);
+        leftPanel.add(leftButtonPanel, BorderLayout.SOUTH);
 
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.add(new JLabel("Pedidos tomados:"), BorderLayout.NORTH);
         takenList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         rightPanel.add(new JScrollPane(takenList), BorderLayout.CENTER);
 
-        JPanel rightButtons = new JPanel(new GridLayout(1, 2));
-        rightButtons.add(btnFinalize);
-        rightButtons.add(btnDeliver);
-        rightPanel.add(rightButtons, BorderLayout.SOUTH);
+        JPanel rightButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        btnFinalize.setPreferredSize(new Dimension(140, 30));
+        btnDeliver.setPreferredSize(new Dimension(140, 30));
+        rightButtonPanel.add(btnFinalize);
+        rightButtonPanel.add(btnDeliver);
+        rightPanel.add(rightButtonPanel, BorderLayout.SOUTH);
 
-        mainPanel.add(leftPanel);
-        mainPanel.add(rightPanel);
+        splitPane.setLeftComponent(leftPanel);
+        splitPane.setRightComponent(rightPanel);
+        splitPane.setResizeWeight(0.5);
+        splitPane.setDividerLocation(350);
+        splitPane.setOneTouchExpandable(true);
 
-        add(mainPanel, BorderLayout.CENTER);
+        add(splitPane, BorderLayout.CENTER);
     }
 
     private void bindEvents() {
         btnTake.addActionListener(e -> {
             List<Order> selected = pendingList.getSelectedValuesList();
-            controller.handleAdvanceOrders(selected);
+            controller.handleTakeOrder(selected);
         });
 
         btnFinalize.addActionListener(e -> {
             List<Order> selected = takenList.getSelectedValuesList();
-            controller.handleAdvanceOrders(selected);
+            controller.handleReadyOrder(selected);
         });
 
         btnDeliver.addActionListener(e -> {
             List<Order> selected = takenList.getSelectedValuesList();
-            controller.handleAdvanceOrders(selected);
+            controller.handleDeliverOrder(selected);
         });
     }
 

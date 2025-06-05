@@ -5,6 +5,7 @@ import observer.Observer;
 import system.SystemException;
 import system.SystemFacade;
 import view.ManagerView;
+import java.util.function.Consumer;
 
 import java.util.List;
 
@@ -23,31 +24,44 @@ public class ManagerController implements Observer {
         update();
     }
 
+    public String getManagerName() {
+        return manager.getName();
+    }
+
     public void handleTakeOrder(List<Order> orders) {
-        handleAdvanceOrders(orders);
+        handleOrderAction(orders, OrderActions.TAKE);
     }
 
     public void handleReadyOrder(List<Order> orders) {
-        handleAdvanceOrders(orders);
+        handleOrderAction(orders, OrderActions.READY);
     }
 
     public void handleDeliverOrder(List<Order> orders) {
-        handleAdvanceOrders(orders);
+        handleOrderAction(orders, OrderActions.DELIVER);
     }
 
-    public void handleAdvanceOrders(List<Order> orders) {
+    private void handleOrderAction(List<Order> orders, OrderAction action) {
         try {
             if (orders == null || orders.isEmpty()) {
                 view.showMessage("Debe seleccionar al menos un pedido.");
                 return;
             }
-            for (Order o : orders) { o.advanceState(manager); }
-            if (orders.size() == 1) { view.showMessage("Pedido actualizado correctamente."); } 
-            else { view.showMessage("Pedidos actualizados correctamente."); }
+            for (Order order : orders) {
+                action.apply(order, manager);
+            }
+            if (orders.size() == 1) {
+                view.showMessage("Pedido actualizado correctamente.");
+            } else {
+                view.showMessage("Pedidos actualizados correctamente.");
+            }
             system.notifyObservers();
         } catch (SystemException e) {
             view.showMessage(e.getMessage());
         }
+    }
+
+    public boolean hasUndeliveredOrders() {
+        return !system.getUserManager().getOrdersByManager(manager, OrderState.IN_PROGRESS, OrderState.READY).isEmpty();
     }
 
     @Override

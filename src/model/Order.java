@@ -76,54 +76,31 @@ public class Order {
         }
     }
 
-    @Override
-    public String toString() {
-        String result = item.getName() + " - $" + item.getPrice();
-        result += " | Estado: " + state;
-        if (state != OrderState.NOT_CONFIRMED) {
-            result += " | Unidad: " + item.getPU().getName();
-            if (manager != null) {
-                result += " | Gestor: " + manager.getName();
-            } else {
-                result += " | Esperando gestor";
-            }
-            if (state != OrderState.NOT_CONFIRMED && confirmedAt != null) {
-                result += " | Confirmado el: " + confirmedAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-            }
-        }
-        return result;
-    }
-
     public void changeState(OrderState newState) throws SystemException {
-        if (state == OrderState.NOT_CONFIRMED && newState == OrderState.CONFIRMED) {
-            state = newState;
-        } else if (state == OrderState.CONFIRMED && newState == OrderState.IN_PROGRESS) {
-            state = newState;
-        } else if (state == OrderState.IN_PROGRESS && newState == OrderState.READY) {
-            state = newState;
-        } else if (state == OrderState.READY && newState == OrderState.DELIVERED) {
+        if ((state == OrderState.NOT_CONFIRMED && newState == OrderState.CONFIRMED)
+                || (state == OrderState.CONFIRMED && newState == OrderState.IN_PROGRESS)
+                || (state == OrderState.IN_PROGRESS && newState == OrderState.READY)
+                || (state == OrderState.READY && newState == OrderState.DELIVERED)) {
             state = newState;
         } else {
-            throw new SystemException("No se puede cambiar el estado de " + state + " a " + newState + ".");
+            throw new SystemException("No es posible cambiar de estado '" + state + "' a '" + newState + "'.");
         }
     }
 
-    public void advanceState(Manager manager) throws SystemException {
+    public void take(Manager manager) throws SystemException {
         this.validate();
-        switch (state) {
-            case CONFIRMED:
-                setManager(manager);
-                changeState(OrderState.IN_PROGRESS);
-                break;
-            case IN_PROGRESS:
-                changeState(OrderState.READY);
-                break;
-            case READY:
-                changeState(OrderState.DELIVERED);
-                break;
-            default:
-                throw new SystemException("No se puede avanzar el estado del pedido.");
-        }
+        setManager(manager);
+        changeState(OrderState.IN_PROGRESS);
+    }
+
+    public void markAsReady() throws SystemException {
+        this.validate();
+        changeState(OrderState.READY);
+    }
+
+    public void deliver() throws SystemException {
+        this.validate();
+        changeState(OrderState.DELIVERED);
     }
 
     public void validate() throws SystemException {
@@ -137,8 +114,23 @@ public class Order {
             Supply s = ing.getSupply();
             s.decreaseStock(ing.getQuantity());
             if (s.getStock() <= s.getMinStock()) {
-                supplyManager.handleOutOfStock(s);                
+                supplyManager.handleOutOfStock(s);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        String result = item.getName() + " - $" + Math.round(item.getPrice());
+        result += " | Estado: " + state;
+        if (state != OrderState.NOT_CONFIRMED) {
+            result += " | Unidad: " + item.getPU().getName();
+            if (manager != null) {
+                result += " | Gestor: " + manager.getName();
+            } else {
+                result += " | Esperando gestor";
+            }
+        }
+        return result;
     }
 }
