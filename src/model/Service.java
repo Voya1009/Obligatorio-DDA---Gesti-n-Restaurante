@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 import system.*;
+import java.time.LocalDateTime;
 
 public class Service {
 
@@ -15,14 +16,14 @@ public class Service {
         this.isFinalized = false;
     }
 
-    public void addOrder(Item item, String comment) throws SystemException {
+    public void addOrder(Item item, String comment, Client client) throws SystemException {
         if (item == null) {
             throw new SystemException("Debe seleccionar un ítem.");
         }
         if (isFinalized) {
             throw new SystemException("El servicio ya fue finalizado.");
         }
-        orders.add(new Order(item, comment));
+        orders.add(new Order(item, comment, client));
     }
 
     public void removeOrder(Order o) throws SystemException {
@@ -79,6 +80,7 @@ public class Service {
         for (Order o : toConfirm) {
             o.validateStock(system.getSupplyManager());
             o.changeState(OrderState.CONFIRMED);
+            o.setConfirmationDate(LocalDateTime.now());
             system.submitOrderToUnit(o);
             anyConfirmed = true;
         }
@@ -111,7 +113,7 @@ public class Service {
         if (removed) {
             removedItemsByStock.add(item);
         }
-    }    
+    }
 
     public boolean hasRemovedItemsByStock() {
         return !removedItemsByStock.isEmpty();

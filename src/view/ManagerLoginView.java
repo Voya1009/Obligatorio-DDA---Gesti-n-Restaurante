@@ -1,7 +1,6 @@
 package view;
 
 import controller.ManagerLoginController;
-
 import javax.swing.*;
 import java.awt.*;
 

@@ -52,7 +52,7 @@ public class ClientController implements Observer {
             if (selectedItems.isEmpty()) throw new SystemException("Debe seleccionar al menos un ítem.");
             String comment = view.getCommentField();
             for (Item item : selectedItems) {
-                client.getService().addOrder(item, comment);
+                client.getService().addOrder(item, comment, client);
             }
             view.clearOrderInputs();
             update();

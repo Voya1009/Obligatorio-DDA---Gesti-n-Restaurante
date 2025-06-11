@@ -1,7 +1,6 @@
 package controller;
 
 import model.Manager;
-import model.Device;
 import system.SystemException;
 import system.SystemFacade;
 import view.ManagerLoginView;

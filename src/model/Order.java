@@ -12,12 +12,15 @@ public class Order {
     private ProcessingUnit assignedPU;
     private Manager manager;
     private LocalDateTime confirmedAt;
+    private Client client;
 
-    public Order(Item item, String comment) {
+    public Order(Item item, String comment, Client client) {
         this.item = item;
         this.comment = comment;
         this.state = OrderState.NOT_CONFIRMED;
         this.manager = null;
+        this.assignedPU = item.getPU();
+        this.client = client;
     }
 
     public Item getItem() {
@@ -48,12 +51,20 @@ public class Order {
         this.assignedPU = assignedUP;
     }
 
+    public Client getClient() {
+        return client;
+    }
+
     public Manager getManager() {
         return manager;
     }
 
     public void setManager(Manager manager) {
         this.manager = manager;
+    }
+
+    public void setConfirmationDate(LocalDateTime date) {
+        confirmedAt = date;
     }
 
     public LocalDateTime getDate() {
@@ -69,11 +80,7 @@ public class Order {
     }
 
     public boolean isCancelable() {
-        if (state == OrderState.NOT_CONFIRMED || state == OrderState.CONFIRMED) {
-            return true;
-        } else {
-            return false;
-        }
+        return (state == OrderState.NOT_CONFIRMED || state == OrderState.CONFIRMED);
     }
 
     public void changeState(OrderState newState) throws SystemException {
@@ -121,16 +128,8 @@ public class Order {
 
     @Override
     public String toString() {
-        String result = item.getName() + " - $" + Math.round(item.getPrice());
-        result += " | Estado: " + state;
-        if (state != OrderState.NOT_CONFIRMED) {
-            result += " | Unidad: " + item.getPU().getName();
-            if (manager != null) {
-                result += " | Gestor: " + manager.getName();
-            } else {
-                result += " | Esperando gestor";
-            }
-        }
-        return result;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String formattedDate = confirmedAt != null ? confirmedAt.format(formatter) : "Sin confirmar";
+        return item.getName() + " - " + client.getName() + " - " + formattedDate;
     }
 }

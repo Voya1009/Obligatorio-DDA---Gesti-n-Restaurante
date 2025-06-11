@@ -20,7 +20,6 @@ public class PreferentialPolicy implements PaymentPolicy {
         if (subtotal > DISCOUNT_THRESHOLD) {
             subtotal -= subtotal * DISCOUNT_RATE;
         }
-
         return Math.max(0, subtotal);
     }
 

@@ -7,14 +7,14 @@ public class Client {
     private String number;
     private String password;
     private String name;
-    private PaymentPolicy type;
+    private PaymentPolicy clientPolicy;
     private Service currentService;
 
-    public Client(String number, String password, String name, PaymentPolicy type) {
+    public Client(String number, String password, String name, PaymentPolicy policy) {
         this.number = number;
         this.password = password;
         this.name = name;
-        this.type = type;
+        this.clientPolicy = policy;
     }
 
     public String getNumber() {
@@ -34,19 +34,19 @@ public class Client {
     }
 
     public PaymentPolicy getPaymentPolicy() {
-        return type;
+        return clientPolicy;
     }
 
-    public void changeType(PaymentPolicy newType) {
-        this.type = newType;
+    public void changePolicy(PaymentPolicy policy) {
+        this.clientPolicy = policy;
     }
 
     public double serviceCost(double total, ArrayList<Order> orders) {
-        return type.calculateTotal(total, orders);
+        return clientPolicy.calculateTotal(total, orders);
     }
 
     public String getBenefitDescription() {
-        return type.getDescription();
+        return clientPolicy.getDescription();
     }
 
     public Service getService() {
